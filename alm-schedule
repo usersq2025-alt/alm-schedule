@@ -96,7 +96,7 @@
 
 <script>
   // رابط اتصال جوجل شيت الذي زودتني به
-  const API_URL = "https://script.google.com/macros/s/AKfycbwfVfAugVaVBNnreJpdoAtswk3eDsgez_y9deVJk1tpGZNHS_3x6HtIW69WNID0Fs8/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbz0twh50vsrLBI1gtiuUCuZiribUBXSpqHKxX7R_lG1GHca6k9VxjfVVes7hwmZbtI/exec";
   
   let allSlots = [];
   let selectedSlots = [];
