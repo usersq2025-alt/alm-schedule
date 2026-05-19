@@ -82,8 +82,9 @@
       </select>
     </div>
 
+    <!-- شريط الحالة المحدث -->
     <div class="status-bar" id="selectionStatus">
-      يرجى اختيار <b>موعدين</b> (يمنع اختيار يومين متتاليين)
+      يرجى اختيار <b>موعدين أو 3 مواعيد</b> (يمنع اختيار يومين متتاليين)
     </div>
 
     <div id="contentSlots"></div>
@@ -186,22 +187,38 @@
     updateStatusUI();
   }
 
-  // منطق تعطيل الأيام المتتالية
+  // منطق تعطيل الأيام المتتالية (معدل ليأخذ بعين الاعتبار جميع المواعيد المختارة)
   function checkDisabled(day) {
     if(selectedSlots.length === 0) return false;
-    if(selectedSlots.length >= 2) return true; // إذا تم اختيار 2 يعطل الباقي
+    
+    // الحد الأقصى الآن هو 3 مواعيد بدلاً من 2
+    if(selectedSlots.length >= 3) return true; 
+
     const dayIdx = daysOrder.indexOf(day);
-    const selIdx = daysOrder.indexOf(selectedSlots[0].day);
-    return Math.abs(dayIdx - selIdx) <= 1 || dayIdx === selIdx;
+    
+    // فحص جميع المواعيد التي تم اختيارها حتى لا يتم اختيار يوم متتالي مع أي منها
+    for (let i = 0; i < selectedSlots.length; i++) {
+        const selIdx = daysOrder.indexOf(selectedSlots[i].day);
+        const diff = Math.abs(dayIdx - selIdx);
+        // التحقق من الأيام المتتالية (الفرق 1) وحالة الدوران بين الخميس والجمعة (الفرق 6)
+        if (diff <= 1 || diff === 6) {
+            return true;
+        }
+    }
+    
+    return false;
   }
 
   // اختيار وإلغاء المواعيد
   function toggleSlot(id, day, dis) {
     if(dis) return;
     const idx = selectedSlots.findIndex(x => x.id === id);
+    
     if(idx > -1) {
+      // إزالة الموعد إذا كان محدداً مسبقاً
       selectedSlots.splice(idx, 1);
-    } else if(selectedSlots.length < 2) {
+    } else if(selectedSlots.length < 3) {
+      // إضافة الموعد إذا لم نصل للحد الأقصى (3)
       selectedSlots.push(allSlots.find(x => x.id === id));
     }
     drawSlots();
@@ -213,17 +230,21 @@
     const btn = document.getElementById('submitBtn');
     
     if (selectedSlots.length === 0) {
-      statusDiv.innerHTML = "يرجى اختيار <b>موعدين</b> (يمنع اختيار يومين متتاليين)";
+      statusDiv.innerHTML = "يرجى اختيار <b>موعدين أو 3 مواعيد</b> (يمنع اختيار يومين متتاليين)";
       statusDiv.style.background = "#fff3e0"; statusDiv.style.color = "#e65100";
-      btn.disabled = true;
+      btn.disabled = true; // تعطيل الزر
     } else if (selectedSlots.length === 1) {
       statusDiv.innerHTML = "أحسنتِ، اختاري <b>الموعد الثاني</b> الآن.";
       statusDiv.style.background = "#e3f2fd"; statusDiv.style.color = "#1565c0";
-      btn.disabled = true;
+      btn.disabled = true; // تعطيل الزر (لأن الحد الأدنى 2)
     } else if (selectedSlots.length === 2) {
-      statusDiv.innerHTML = "✅ اكتمل النصاب! يمكنكِ تأكيد المواعيد الآن.";
+      statusDiv.innerHTML = "✅ اكتمل النصاب الأدنى! يمكنكِ <b>تأكيد المواعيد</b>، أو إضافة <b>موعد ثالث</b>.";
       statusDiv.style.background = "#e8f5e9"; statusDiv.style.color = "#2e7d32";
-      btn.disabled = false;
+      btn.disabled = false; // تفعيل الزر (يسمح بالتأكيد)
+    } else if (selectedSlots.length === 3) {
+      statusDiv.innerHTML = "🌟 اكتمل الحد الأقصى (3 مواعيد)! يرجى تأكيد الحجز الآن.";
+      statusDiv.style.background = "#c8e6c9"; statusDiv.style.color = "#1b5e20";
+      btn.disabled = false; // تفعيل الزر
     }
   }
 
